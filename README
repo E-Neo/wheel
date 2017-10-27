@@ -1,0 +1,15 @@
+wheel
+=====
+
+A library of a lot of wheels (data structures, algorithms and more)?
+
+Technical details
+-----------------
+
+- Written in C and don't have recursive functions.
+- Valgrind clean.
+
+Note
+----
+
+Do not have high expectations on this library.
