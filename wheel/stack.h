@@ -21,6 +21,7 @@ struct stack
    or stack_at().  */
 extern stack *stack_new (size_t _size);
 extern stack *stack_new_with_capacity (size_t _size, size_t _capacity);
+extern stack *stack_copy (const stack *s);
 extern void stack_free (stack *s);
 extern void stack_push (stack *s, const void *x);
 extern void stack_pop (stack *s);

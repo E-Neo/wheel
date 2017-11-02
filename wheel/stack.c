@@ -17,6 +17,15 @@ stack_new (size_t _size)
   return stack_new_with_capacity (_size, STACK_DEFAULT_CAPACITY);
 }
 
+extern stack *
+stack_copy (const stack *s)
+{
+  stack *new = stack_new_with_capacity (s->_size, s->_capacity);
+  new->len = s->len;
+  memcpy (new->data, s->data, s->len * s->_size);
+  return new;
+}
+
 extern void
 stack_free (stack *s)
 {

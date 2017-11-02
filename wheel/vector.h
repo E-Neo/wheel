@@ -19,8 +19,16 @@ extern vector *vector_new (size_t _size);
 extern vector *vector_new_with_capacity (size_t _size, size_t _capacity);
 extern void vector_free (vector *vec);
 /* The memory areas base and vec->data must not overlap.  */
-extern void vector_insert (vector *vec, size_t posi, void *base, size_t n);
+extern void vector_insert (vector *vec, size_t posi, const void *base, size_t n);
 extern void vector_remove (vector *vec, size_t posi, size_t n);
+/* func should return 0 if data should be removed.  */
+extern void vector_remove_with_func (vector *vec, size_t begin, size_t end,
+                                     int (*func) (const void *));
 extern void *vector_at (const vector *vec, size_t n);
+extern void *vector_binary_search (vector *vec, const void *key,
+                                   size_t begin, size_t end,
+                                   int (*compar) (const void *, const void *));
+extern void vector_merge_sort (vector *vec, size_t begin, size_t end,
+                               int (*compar) (const void *, const void *));
 
 #endif

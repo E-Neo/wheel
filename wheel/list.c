@@ -28,7 +28,7 @@ list_free (list *lst)
 }
 
 extern list_node *
-list_insert (list *lst, list_node *posi, void *base, size_t n)
+list_insert (list *lst, list_node *posi, const void *base, size_t n)
 {
   if (0 == n) return posi;
   void *data;
@@ -74,7 +74,7 @@ list_remove (list *lst, list_node *posi, size_t n)
 }
 
 extern list_node *
-list_at (list *lst, size_t n)
+list_at (const list *lst, size_t n)
 {
   list_node *node = lst->head->next;
   while (n--) node = node->next;

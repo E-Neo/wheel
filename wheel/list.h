@@ -22,8 +22,8 @@ struct list
 extern list *list_new (size_t _size);
 extern void list_free (list *lst);
 extern list_node *list_insert (list *lst, list_node *posi,
-                               void *base, size_t n);
+                               const void *base, size_t n);
 extern list_node *list_remove (list *lst, list_node *posi, size_t n);
-extern list_node *list_at (list *lst, size_t n);
+extern list_node *list_at (const list *lst, size_t n);
 
 #endif
