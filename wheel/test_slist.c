@@ -22,6 +22,10 @@ make_intersect_slists (slist **lst1_ref, slist **lst2_ref)
 static slist *
 make_slist_with_cycle ()
 {
+  /* -> 0 -> 1 -> 2 -> 3 -> 4  */
+  /*                   ^    |  */
+  /*                   |    v  */
+  /*                   6 <- 5  */
   int array[] = { 0, 1, 2, 3, 4, 5, 6 };
   slist *lst = slist_new (array, sizeof (int));
   slist *cycle = slist_insert_after (lst, array + 1, 3, sizeof (int));
@@ -60,6 +64,9 @@ main ()
   printf ("expected 0 1: %d %d\n",
           slist_have_cycle_p (lst1),
           slist_have_cycle_p (lst));
+  printf ("cycle length expected 4: %zu\n", slist_cycle_length (lst));
+  printf ("cycle front expected 3: %d\n",
+          *(int *) (slist_cycle_front (lst))->data);
   slist_remove (lst1, 6); slist_remove (lst2, 4);
   slist_remove (lst, 7);
 }

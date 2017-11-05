@@ -17,6 +17,15 @@ vector_new (size_t _size)
   return vector_new_with_capacity (_size, VECTOR_DEFAULT_CAPACITY);
 }
 
+extern vector *
+vector_copy (const vector *vec)
+{
+  vector *new = vector_new_with_capacity (vec->_size, vec->_capacity);
+  new->len = vec->len;
+  memcpy (new->data, vec->data, vec->len * vec->_size);
+  return new;
+}
+
 extern void
 vector_free (vector *vec)
 {
@@ -109,6 +118,7 @@ vector_binary_search (vector *vec, const void *key, size_t begin, size_t end,
                         end - begin, _size, compar);
 }
 
+/* O(n) */
 static void
 merge (void *base, void *begin, const void *end, void *buffer, size_t _size,
        int (*compar) (const void *, const void *))

@@ -1,14 +1,9 @@
 #include <stdio.h>
 #include "digraph.h"
+#include "vector.h"
 
-static void
-visit (void *data)
-{
-  puts ((char *) data);
-}
-
-int
-main ()
+static digraph *
+make_digraph ()
 {
   digraph *G = digraph_new (0, 2, 3);
   digraph_insert_node (G, "S"); /* 0 */
@@ -34,7 +29,48 @@ main ()
   digraph_insert_edge (G, 5, 6, "EF");
   digraph_insert_edge (G, 7, 6, "GF");
   digraph_insert_edge (G, 7, 2, "GB");
-  digraph_bfs (G, 0, visit); /* SACDEBFG */
+  return G;
+}
+
+static void
+visit (void *data, void *arg)
+{
+  vector *vec = arg;
+  vector_insert (vec, vec->len, data, 1);
+}
+
+static void
+print_vector (const vector *vec)
+{
+  if (vec->len == 0)
+    printf ("{}");
+  else
+    {
+      char *p = vec->data;
+      size_t len = vec->len, _size = vec->_size;
+      printf ("{");
+      while (--len)
+        {
+          printf (" %s,", p);
+          p += _size;
+        }
+      printf (" %s }", p);
+    }
+}
+
+int
+main ()
+{
+  digraph *G = make_digraph ();
+  vector *vec = vector_new (G->_node_size);
+  digraph_bfs (G, 0, visit, vec); /* SACDEBFG */
+  printf ("expect { S, A, C, D, E, B, F, G }:\n");
+  print_vector (vec); printf ("\n");
+  vec->len = 0;
+  digraph_dfs_preorder (G, 0, visit, vec);
+  printf ("expect { S, D, B, C, A, E, G, F }: \n");
+  print_vector (vec); printf ("\n");
+  vector_free (vec);
   digraph_free (G);
   return 0;
 }

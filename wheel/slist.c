@@ -61,7 +61,9 @@ slist_at (const slist *lst, size_t n)
   return (slist *) lst;
 }
 
-/* Return the reverse nth node in O(n).  */
+/* Return the reverse nth node
+   Time: O(n)
+   Space: O(1)  */
 extern slist *
 slist_at_r (const slist *lst, size_t n)
 {
@@ -75,7 +77,8 @@ slist_at_r (const slist *lst, size_t n)
   return (slist *) lst;
 }
 
-/* O(n) */
+/* Time: O(n)
+   Space: O(1)  */
 extern slist *
 slist_first_common_node (const slist *lst1, const slist *lst2)
 {
@@ -98,7 +101,8 @@ slist_first_common_node (const slist *lst1, const slist *lst2)
   return (slist *) lst1;
 }
 
-/* O(n) */
+/* Time: O(n)
+   Space: O(1)  */
 extern int
 slist_have_cycle_p (const slist *lst)
 {
@@ -113,4 +117,41 @@ slist_have_cycle_p (const slist *lst)
       hare = hare->next->next;
       tortoise = tortoise->next;
     }
+}
+
+/* Time: O(n)
+   Space: O(1)  */
+extern size_t
+slist_cycle_length (const slist *lst)
+{
+  const slist *tortoise = lst, *hare = lst->next;
+  while (1)
+    {
+      if (hare == tortoise) break;
+      if (hare == NULL
+          || hare->next == NULL
+          || hare->next->next == NULL)
+        return 0;
+      hare = hare->next->next;
+      tortoise = tortoise->next;
+    }
+  size_t len = 1;
+  while ((tortoise = tortoise->next) != hare) len++;
+  return len;
+}
+
+/* Time: O(n)
+   Space: O(1)  */
+extern slist *
+slist_cycle_front (const slist *lst)
+{
+  size_t cycle_len = slist_cycle_length (lst);
+  const slist *p = lst, *q = lst;
+  while (cycle_len--) q = q->next;
+  while (p != q)
+    {
+      p = p->next;
+      q = q->next;
+    }
+  return (slist *) p;
 }

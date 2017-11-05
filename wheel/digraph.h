@@ -25,6 +25,9 @@ extern void digraph_remove_node (digraph *G, size_t n);
 extern void digraph_remove_edge (digraph *G, size_t u, size_t v);
 extern void *digraph_at_node (digraph *G, size_t n);
 extern void *digraph_at_edge (digraph *G, size_t u, size_t v);
-extern void digraph_bfs (digraph *G, size_t s, void (*visit) (void *));
+extern void digraph_bfs (digraph *G, size_t s,
+                         void (*visit) (void *, void *), void *arg);
+extern void digraph_dfs_preorder (digraph *G, size_t s,
+                                  void (*visit) (void *, void *), void *arg);
 
 #endif

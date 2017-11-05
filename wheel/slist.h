@@ -23,5 +23,7 @@ extern slist *slist_at (const slist *lst, size_t n);
 extern slist *slist_at_r (const slist *lst, size_t n);
 extern slist *slist_first_common_node (const slist *lst1, const slist *lst2);
 extern int slist_have_cycle_p (const slist *lst);
+extern size_t slist_cycle_length (const slist *lst);
+extern slist *slist_cycle_front (const slist *lst);
 
 #endif

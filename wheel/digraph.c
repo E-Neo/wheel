@@ -148,7 +148,7 @@ digraph_at_edge (digraph *G, size_t u, size_t v)
 
 /* O(n + e) */
 extern void
-digraph_bfs (digraph *G, size_t s, void (*visit) (void *))
+digraph_bfs (digraph *G, size_t s, void (*visit) (void *, void *), void *arg)
 {
   bit_array *discovered = bit_array_new_with_len (G->n);
   queue *q = queue_new (sizeof (size_t));
@@ -158,15 +158,40 @@ digraph_bfs (digraph *G, size_t s, void (*visit) (void *))
       size_t *tmp = queue_front (q); s = *tmp; queue_dequeue (q);
       _node *ptr = vector_at (G->succ, s);
       while ((ptr = ptr->next))
-        {
-          if (!bit_array_test (discovered, ptr->id))
-            {
-              queue_enqueue (q, &ptr->id); bit_array_set (discovered, ptr->id);
-            }
-        }
-      void *data = vector_at (G->node, s);
-      visit (data);
+        if (!bit_array_test (discovered, ptr->id))
+          {
+            queue_enqueue (q, &ptr->id);
+            bit_array_set (discovered, ptr->id);
+          }
+      visit (vector_at (G->node, s), arg);
     }
   bit_array_free (discovered);
   queue_free (q);
+}
+
+/* O(n + e) */
+extern void
+digraph_dfs_preorder (digraph *G, size_t s,
+                      void (*visit) (void *, void *), void *arg)
+{
+  bit_array *visited = bit_array_new_with_len (G->n);
+  size_t *stack = alloc_func (G->n * sizeof (size_t)); size_t len = 0;
+  stack[len++] = s; bit_array_set (visited, s);
+  while (len)
+    {
+      s = stack[--len];
+      visit (vector_at (G->node, s), arg);
+      _node *ptr = vector_at (G->succ, s);
+      while ((ptr = ptr->next))
+        {
+          size_t id = ptr->id;
+          if (!bit_array_test (visited, id))
+            {
+              stack[len++] = id;
+              bit_array_set (visited, id);
+            }
+        }
+    }
+  bit_array_free (visited);
+  free_func (stack);
 }
