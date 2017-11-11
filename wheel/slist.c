@@ -106,13 +106,12 @@ slist_first_common_node (const slist *lst1, const slist *lst2)
 extern int
 slist_have_cycle_p (const slist *lst)
 {
+  if (NULL == lst) return 0;
   const slist *tortoise = lst, *hare = lst->next;
   while (1)
     {
       if (hare == tortoise) return 1;
-      if (hare == NULL
-          || hare->next == NULL
-          || hare->next->next == NULL)
+      if (hare == NULL || hare->next == NULL)
         return 0;
       hare = hare->next->next;
       tortoise = tortoise->next;
@@ -124,13 +123,12 @@ slist_have_cycle_p (const slist *lst)
 extern size_t
 slist_cycle_length (const slist *lst)
 {
+  if (NULL == lst) return 0;
   const slist *tortoise = lst, *hare = lst->next;
   while (1)
     {
       if (hare == tortoise) break;
-      if (hare == NULL
-          || hare->next == NULL
-          || hare->next->next == NULL)
+      if (hare == NULL || hare->next == NULL)
         return 0;
       hare = hare->next->next;
       tortoise = tortoise->next;
@@ -146,6 +144,7 @@ extern slist *
 slist_cycle_front (const slist *lst)
 {
   size_t cycle_len = slist_cycle_length (lst);
+  if (0 == cycle_len) return NULL;
   const slist *p = lst, *q = lst;
   while (cycle_len--) q = q->next;
   while (p != q)

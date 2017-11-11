@@ -186,5 +186,74 @@ vector_merge_sort (vector *vec, size_t begin, size_t end,
                    int (*compar) (const void *, const void *))
 {
   size_t _size = vec->_size;
-  merge_sort (vec->data + begin * _size, end - begin, _size, compar);
+  merge_sort ((char *) vec->data + begin * _size, end - begin, _size, compar);
+}
+
+static void
+insertion_sort (void *base, size_t len, size_t _size,
+                int (*compar) (const void *, const void *))
+{
+  const char *end = (char *) base + len * _size;
+  char *unsorted = base;
+  while ((unsorted += _size) != end)
+    {
+      char x[_size]; memcpy (x, unsorted, _size);
+      size_t lo = 0, hi = (unsorted - (char *) base ) / _size;
+      while (lo < hi)
+        {
+          size_t mi = (lo + hi) >> 1;
+          if (compar (x, base + mi * _size) < 0)
+            hi = mi;
+          else
+            lo = mi + 1;
+        }
+      char *ptr =  base + lo * _size;
+      memmove (ptr + _size, ptr, unsorted - ptr);
+      memcpy (ptr, x, _size);
+    }
+}
+
+/* Time: O(n^2)
+   Space: O(1)  */
+extern void
+vector_insertion_sort (vector *vec, size_t begin, size_t end,
+                       int (*compar) (const void *, const void *))
+{
+  size_t _size = vec->_size;
+  insertion_sort ((char *) vec->data + begin * _size,
+                  end - begin, _size, compar);
+}
+
+static void
+bubble_sort (void *base, size_t len, size_t _size,
+             int (*compar) (const void *, const void *))
+{
+  const char *end = (char *) base + len * _size;
+  int sorted = 0;
+  while (!sorted)
+    {
+      sorted = 1;
+      for (char *p = base, *q = base + _size; q < end; p += _size, q += _size)
+        if (compar (q, p) < 0)
+          {
+            sorted = 0;
+            for (size_t i = 0; i < _size; i++)  /* swap (p, q, _size) */
+              {
+                char tmp = q[i];
+                q[i] = p[i];
+                p[i] = tmp;
+              }
+          }
+      end -= _size;
+    }
+}
+
+/* Time: O(n^2)
+   Space: O(1)  */
+extern void
+vector_bubble_sort (vector *vec, size_t begin, size_t end,
+                    int (*compar) (const void *, const void *))
+{
+  size_t _size = vec->_size;
+  bubble_sort ((char *) vec->data + begin * _size, end - begin, _size, compar);
 }

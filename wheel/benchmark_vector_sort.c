@@ -9,15 +9,15 @@ static void
 print_vector_double (const vector *vec)
 {
   if (vec->len == 0)
-    printf ("{}");
+    printf ("[]");
   else
     {
       double *ptr = vec->data;
       size_t n = vec->len - 1;
-      printf ("{");
+      printf ("[");
       while (n--)
-        printf (" %lf,", *(ptr++));
-      printf (" %lf }", *ptr);
+        printf ("%lf, ", *(ptr++));
+      printf ("%lf]", *ptr);
     }
 }
 
@@ -60,6 +60,32 @@ vector_merge_sort_rec (vector *vec, size_t begin, size_t end,
          (char *) vec->data + end * _size,
          buffer, _size, compar);
   free_func (buffer);
+}
+
+static void
+insertion_sort_simple (void *base, size_t len, size_t _size,
+                       int (*compar) (const void *, const void *))
+{
+  const char *end = (char *) base + len * _size;
+  char *unsorted = base;
+  while ((unsorted += _size) != end)
+    {
+      char x[_size]; memcpy (x, unsorted, _size);
+      char *ptr = unsorted;
+      while (ptr > (char *) base && compar (ptr - _size, unsorted) > 0)
+        ptr -= _size;
+      memmove (ptr + _size, ptr, unsorted - ptr);
+      memcpy (ptr, x, _size);
+    }
+}
+
+static void
+vector_insertion_sort_simple (vector *vec, size_t begin, size_t end,
+                              int (*compar) (const void *, const void *))
+{
+  size_t _size = vec->_size;
+  insertion_sort_simple (vec->data + begin * _size,
+                         end - begin, _size, compar);
 }
 
 static int
@@ -120,22 +146,50 @@ int
 main ()
 {
   vector *src_vec = make_random_vector (1 << 24);
-  size_t num[] = {16, 21, 64, 100, 256,
-                  379, 1024, 1668, 4096, 5591,
-                  16384, 24796, 65536, 127942, 262144,
-                  502320, 1048576, 1462117, 4194304, 7478860,
-                  16777216};
+  size_t num0[] = {16, 21, 64, 100, 256,
+                   379, 1024, 1668, 4096, 5591,
+                   16384, 24796, 65536, 127942, 262144,
+                   502320, 1048576, 1462117, 4194304, 7478860,
+                   16777216};
+  size_t num1[] = {10000, 20000, 30000, 40000, 50000,
+                   60000, 70000, 80000, 90000, 100000};
   vector *tmp;
-  tmp = test_sort_with_num (src_vec, num,
-                            sizeof (num) / sizeof (size_t),
+
+  puts ("merge_sort_iter");
+  tmp = test_sort_with_num (src_vec, num0,
+                            sizeof (num0) / sizeof (size_t),
                             vector_merge_sort);
   print_vector_double (tmp); printf ("\n");
   vector_free (tmp);
-  tmp = test_sort_with_num (src_vec, num,
-                            sizeof (num) / sizeof (size_t),
+
+  puts ("merge_sort_rec");
+  tmp = test_sort_with_num (src_vec, num0,
+                            sizeof (num0) / sizeof (size_t),
                             vector_merge_sort_rec);
   print_vector_double (tmp); printf ("\n");
   vector_free (tmp);
+
+  puts ("insertion_sort_simple");
+  tmp = test_sort_with_num (src_vec, num1,
+                            sizeof (num1) / sizeof (size_t),
+                            vector_insertion_sort_simple);
+  print_vector_double (tmp); printf ("\n");
+  vector_free (tmp);
+
+  puts ("insertion_sort_bsearch");
+  tmp = test_sort_with_num (src_vec, num1,
+                            sizeof (num1) / sizeof (size_t),
+                            vector_insertion_sort);
+  print_vector_double (tmp); printf ("\n");
+  vector_free (tmp);
+
+  puts ("bubble_sort");
+  tmp = test_sort_with_num (src_vec, num1,
+                            sizeof (num1) / sizeof (size_t),
+                            vector_bubble_sort);
+  print_vector_double (tmp); printf ("\n");
+  vector_free (tmp);
+
   vector_free (src_vec);
   return 0;
 }

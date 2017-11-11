@@ -37,12 +37,24 @@ main ()
   vector_insert (vec, 5, array, 7);
   vector_remove (vec, 5, 7);
   vector_remove_with_func (vec, 0, vec->len, remove_func);
+  vector *vec_cpy = vector_copy (vec);
   print_vector_int (vec);
   vector_merge_sort (vec, 0, vec->len, compar);
-  puts ("expect { 0, 1, 2, 3, 4, 5, 6, 7, 8 }");
+  puts ("merge_sort: expect { 0, 1, 2, 3, 4, 5, 6, 7, 8 }");
   print_vector_int (vec);
   printf ("expect 6: %d\n",
           *(int *) vector_binary_search (vec, array + 1, 0, vec->len, compar));
   vector_free (vec);
+  vec = vector_copy (vec_cpy);
+  vector_insertion_sort (vec, 0, vec->len, compar);
+  puts ("insertion_sort: expect { 0, 1, 2, 3, 4, 5, 6, 7, 8 }");
+  print_vector_int (vec);
+  vector_free (vec);
+  vec = vector_copy (vec_cpy);
+  vector_bubble_sort (vec, 0, vec->len, compar);
+  puts ("bubble_sort: expect { 0, 1, 2, 3, 4, 5, 6, 7, 8 }");
+  print_vector_int (vec);
+  vector_free (vec);
+  vector_free (vec_cpy);
   return 0;
 }
