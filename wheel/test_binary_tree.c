@@ -1,138 +1,165 @@
 #include <stdio.h>
 #include "binary_tree.h"
-#include "stack.h"
-#include "memory.h"
+#include "vector.h"
 
-bin_node *
-make_test_bin_node ()
+static void
+print_vector (const vector *vec)
 {
-  char *data_array[16];
-  bin_node *node_array[16];
-  for (size_t i = 0; i < 16; i++)
-    {
-      data_array[i] = alloc_func (2);
-      data_array[i][0] = 'a' + i;
-      data_array[i][1] = '\0';
-      node_array[i] = bin_node_new (data_array[i], NULL, NULL, NULL);
-    }
-  node_array['a' - 'a']->parent = node_array['c' - 'a'];
-  node_array['a' - 'a']->rc = node_array['b' - 'a'];
-  node_array['b' - 'a']->parent = node_array['a' - 'a'];
-  node_array['c' - 'a']->parent = node_array['d' - 'a'];
-  node_array['c' - 'a']->lc = node_array['a' - 'a'];
-  node_array['d' - 'a']->parent = node_array['i' - 'a'];
-  node_array['d' - 'a']->lc = node_array['c' - 'a'];
-  node_array['d' - 'a']->rc = node_array['h' - 'a'];
-  node_array['e' - 'a']->parent = node_array['f' - 'a'];
-  node_array['f' - 'a']->parent = node_array['h' - 'a'];
-  node_array['f' - 'a']->lc = node_array['e' - 'a'];
-  node_array['f' - 'a']->rc = node_array['g' - 'a'];
-  node_array['g' - 'a']->parent = node_array['f' - 'a'];
-  node_array['h' - 'a']->parent = node_array['d' - 'a'];
-  node_array['h' - 'a']->lc = node_array['f' - 'a'];
-  node_array['i' - 'a']->lc = node_array['d' - 'a'];
-  node_array['i' - 'a']->rc = node_array['l' - 'a'];
-  node_array['j' - 'a']->parent = node_array['k' - 'a'];
-  node_array['k' - 'a']->parent = node_array['l' - 'a'];
-  node_array['k' - 'a']->lc = node_array['j' - 'a'];
-  node_array['l' - 'a']->parent = node_array['i' - 'a'];
-  node_array['l' - 'a']->lc = node_array['k' - 'a'];
-  node_array['l' - 'a']->rc = node_array['n' - 'a'];
-  node_array['m' - 'a']->parent = node_array['n' - 'a'];
-  node_array['n' - 'a']->parent = node_array['l' - 'a'];
-  node_array['n' - 'a']->lc = node_array['m' - 'a'];
-  node_array['n' - 'a']->rc = node_array['p' - 'a'];
-  node_array['o' - 'a']->parent = node_array['p' - 'a'];
-  node_array['p' - 'a']->parent = node_array['n' - 'a'];
-  node_array['p' - 'a']->lc = node_array['o' - 'a'];
-  return node_array['i' - 'a'];
+  if (vec->len == 0) { puts ("[]"); return; }
+  printf ("[");
+  size_t i;
+  for (i = 0; i < vec->len - 1; i++)
+    printf ("%s, ", (char *) vector_at (vec, i));
+  printf ("%s]\n", (char *) vector_at (vec, i));
 }
 
-int
-visit_bfs (bin_node *node)
+static binary_tree *
+make_test_binary_tree ()
 {
-  printf ("%s\n", (char *) node->data);
-  return 1;
+  binary_tree *T = binary_tree_new (2);
+  binary_tree_insert (T, T->root, 0, "i");
+  binary_tree_insert (T, T->root, 0, "d");
+  binary_tree_insert (T, T->root, 1, "l");
+  binary_tree_insert (T, T->root->lc, 0, "c");
+  binary_tree_insert (T, T->root->lc, 1, "h");
+  binary_tree_insert (T, T->root->rc, 0, "k");
+  binary_tree_insert (T, T->root->rc, 1, "n");
+  binary_tree_insert (T, T->root->lc->lc, 0, "a");
+  binary_tree_insert (T, T->root->lc->rc, 0, "f");
+  binary_tree_insert (T, T->root->rc->lc, 0, "j");
+  binary_tree_insert (T, T->root->rc->rc, 0, "m");
+  binary_tree_insert (T, T->root->rc->rc, 1, "p");
+  binary_tree_insert (T, T->root->lc->lc->lc, 1, "b");
+  binary_tree_insert (T, T->root->lc->rc->lc, 0, "e");
+  binary_tree_insert (T, T->root->lc->rc->lc, 1, "g");
+  binary_tree_insert (T, T->root->rc->rc->rc, 0, "o");
+  return T;
 }
 
-void
-dfs_preorder_print_front_back (bin_node *node)
+static binary_tree *
+make_complete_binary_tree ()
 {
-  bin_node *front = bin_node_dfs_preorder_front (node);
-  bin_node *back = bin_node_dfs_preorder_back (node);
-  char *front_data = front ? front->data : "NULL";
-  char *back_data = back ? back->data : "NULL";
-  printf ("%s %s\n", front_data, back_data);
+  binary_tree *T = binary_tree_new (2);
+  binary_tree_insert (T, T->root, 0, "1");
+  binary_tree_insert (T, T->root, 0, "2");
+  binary_tree_insert (T, T->root, 1, "3");
+  binary_tree_insert (T, T->root->lc, 0, "4");
+  return T;
 }
 
-int
-visit_dfs_preorder_print_data (bin_node *node)
+static void
+visit (void *data, void *arg)
 {
-  bin_node *prev = bin_node_dfs_preorder_prev (node);
-  bin_node *next = bin_node_dfs_preorder_next (node);
-  char *prev_data = prev ? prev->data : "NULL";
-  char *next_data = next ? next->data : "NULL";
-  printf ("%s -> %s -> %s\n", prev_data, (char *) node->data, next_data);
-  return 1;
-}
-
-void
-dfs_inorder_print_front_back (bin_node *node)
-{
-  bin_node *front = bin_node_dfs_inorder_front (node);
-  bin_node *back = bin_node_dfs_inorder_back (node);
-  char *front_data = front ? front->data : "NULL";
-  char *back_data = back ? back->data : "NULL";
-  printf ("%s %s\n", front_data, back_data);
-}
-
-int
-visit_dfs_inorder_print_data (bin_node *node)
-{
-  bin_node *prev = bin_node_dfs_inorder_prev (node);
-  bin_node *next = bin_node_dfs_inorder_next (node);
-  char *prev_data = prev ? prev->data : "NULL";
-  char *next_data = next ? next->data : "NULL";
-  printf ("%s -> %s -> %s\n", prev_data, (char *) node->data, next_data);
-  return 1;
-}
-
-void
-dfs_postorder_print_front_back (bin_node *node)
-{
-  bin_node *front = bin_node_dfs_postorder_front (node);
-  bin_node *back = bin_node_dfs_postorder_back (node);
-  char *front_data = front ? front->data : "NULL";
-  char *back_data = back ? back->data : "NULL";
-  printf ("%s %s\n", front_data, back_data);
-}
-
-int
-visit_dfs_postorder_print_data (bin_node *node)
-{
-  bin_node *prev = bin_node_dfs_postorder_prev (node);
-  bin_node *next = bin_node_dfs_postorder_next (node);
-  char *prev_data = prev ? prev->data : "NULL";
-  char *next_data = next ? next->data : "NULL";
-  printf ("%s -> %s -> %s\n", prev_data, (char *) node->data, next_data);
-  return 1;
+  vector *vec = arg;
+  vector_insert (vec, vec->len, data, 1);
 }
 
 int
 main ()
 {
-  bin_node *root = make_test_bin_node ();
-  puts ("bfs:");
-  bin_node_bfs (root, visit_bfs);
-  puts ("\ndfs_preorder:");
-  dfs_preorder_print_front_back (root);
-  bin_node_dfs_preorder (root, visit_dfs_preorder_print_data);
-  puts ("\ndfs_inorder:");
-  dfs_inorder_print_front_back (root);
-  bin_node_dfs_inorder (root, visit_dfs_inorder_print_data);
-  puts ("\ndfs_postorder:");
-  dfs_postorder_print_front_back (root);
-  bin_node_dfs_postorder (root, visit_dfs_postorder_print_data);
-  bin_node_free (root);
+  binary_tree *T = make_test_binary_tree ();
+  binary_tree *complete_T = make_complete_binary_tree ();
+  vector *vec = vector_new (2);
+
+  printf ("height, expect 5: %zu\n", binary_tree_height (T));
+  printf ("width, expect 5: %zu\n", binary_tree_width (T));
+  printf ("complete_p, expect 0: %d\n", binary_tree_complete_p (T));
+  printf ("complete_p, expect 1: %d\n", binary_tree_complete_p (complete_T));
+  puts ("");
+
+  puts ("expect");
+  puts ("[i, d, l, c, h, k, n, a, f, j, m, p, b, e, g, o]");
+  vec->len = 0;
+  puts ("bfs");
+  binary_tree_bfs (T, visit, vec);
+  print_vector (vec);
+  vec->len = 0;
+  puts ("bfs_next");
+  for (bin_node *posi = binary_tree_bfs_front (T);
+       posi != NULL;
+       posi = binary_tree_bfs_next (T, posi))
+    vector_insert (vec, vec->len, posi->data, 1);
+  print_vector (vec);
+  vec->len = 0;
+  puts ("bfs_prev");
+  for (bin_node *posi = binary_tree_bfs_back (T);
+       posi != NULL;
+       posi = binary_tree_bfs_prev (T, posi))
+    vector_insert (vec, vec->len, posi->data, 1);
+  vector_reverse (vec, 0, vec->len);
+  print_vector (vec);
+  puts ("");
+
+  puts ("expect");
+  puts ("[i, d, c, a, b, h, f, e, g, l, k, j, n, m, p, o]");
+  vec->len = 0;
+  puts ("dfs_preorder");
+  binary_tree_dfs_preorder (T, visit, vec);
+  print_vector (vec);
+  vec->len = 0;
+  puts ("dfs_preorder_next");
+  for (bin_node *posi = binary_tree_dfs_preorder_front (T);
+       posi != NULL;
+       posi = binary_tree_dfs_preorder_next (T, posi))
+    vector_insert (vec, vec->len, posi->data, 1);
+  print_vector (vec);
+  vec->len = 0;
+  puts ("dfs_preorder_prev");
+  for (bin_node *posi = binary_tree_dfs_preorder_back (T);
+       posi != NULL;
+       posi = binary_tree_dfs_preorder_prev (T, posi))
+    vector_insert (vec, vec->len, posi->data, 1);
+  vector_reverse (vec, 0, vec->len);
+  print_vector (vec);
+  puts ("");
+
+  puts ("expect");
+  puts ("[a, b, e, d, e, f, g, h, i, j, k, l, m, n, o, p]");
+  vec->len = 0;
+  puts ("dfs_inorder");
+  binary_tree_dfs_inorder (T, visit, vec);
+  print_vector (vec);
+  vec->len = 0;
+  puts ("dfs_inorder_next");
+  for (bin_node *posi = binary_tree_dfs_inorder_front (T);
+       posi != NULL;
+       posi = binary_tree_dfs_inorder_next (T, posi))
+    vector_insert (vec, vec->len, posi->data, 1);
+  print_vector (vec);
+  vec->len = 0;
+  puts ("dfs_inorder_prev");
+  for (bin_node *posi = binary_tree_dfs_inorder_back (T);
+       posi != NULL;
+       posi = binary_tree_dfs_inorder_prev (T, posi))
+    vector_insert (vec, vec->len, posi->data, 1);
+  vector_reverse (vec, 0, vec->len);
+  print_vector (vec);
+  puts ("");
+
+  puts ("expect");
+  puts ("[b, a, c, e, g, f, h, d, j, k, m, o, p, n, l, i]");
+  vec->len = 0;
+  puts ("dfs_postorder");
+  binary_tree_dfs_postorder (T, visit, vec);
+  print_vector (vec);
+  vec->len = 0;
+  puts ("dfs_postorder_next");
+  for (bin_node *posi = binary_tree_dfs_postorder_front (T);
+       posi != NULL;
+       posi = binary_tree_dfs_postorder_next (T, posi))
+    vector_insert (vec, vec->len, posi->data, 1);
+  print_vector (vec);
+  vec->len = 0;
+  puts ("dfs_postorder_prev");
+  for (bin_node *posi = binary_tree_dfs_postorder_back (T);
+       posi != NULL;
+       posi = binary_tree_dfs_postorder_prev (T, posi))
+    vector_insert (vec, vec->len, posi->data, 1);
+  vector_reverse (vec, 0, vec->len);
+  print_vector (vec);
+
+  vector_free (vec);
+  binary_tree_free (T);
+  binary_tree_free (complete_T);
   return 0;
 }

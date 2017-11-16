@@ -87,6 +87,22 @@ vector_at (const vector *vec, size_t n)
   return (char *) vec->data + n * vec->_size;
 }
 
+extern void
+vector_reverse (vector *vec, size_t begin, size_t end)
+{
+  size_t _size = vec->_size;
+  char *sub_begin = (char *) vec->data + begin * _size;
+  char *sub_end = (char *) vec->data + end * _size;
+  while (sub_begin + _size < sub_end)
+    {
+      char tmp[_size];
+      memcpy (tmp, sub_begin, _size);
+      memcpy (sub_begin, sub_end - _size, _size);
+      memcpy (sub_end - _size, tmp, _size);
+      sub_begin += _size; sub_end -= _size;
+    }
+}
+
 static void *
 binary_search (const void *key, const void *base, size_t len,
                size_t _size, int (*compar) (const void *, const void *))

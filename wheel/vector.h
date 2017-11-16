@@ -27,6 +27,7 @@ extern void vector_remove (vector *vec, size_t posi, size_t n);
 extern void vector_remove_with_func (vector *vec, size_t begin, size_t end,
                                      int (*func) (const void *));
 extern void *vector_at (const vector *vec, size_t n);
+extern void vector_reverse (vector *vec, size_t begin, size_t end);
 extern void *vector_binary_search (vector *vec, const void *key,
                                    size_t begin, size_t end,
                                    int (*compar) (const void *, const void *));

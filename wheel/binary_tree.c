@@ -1,202 +1,388 @@
+#include <string.h>
 #include "binary_tree.h"
-#include "queue.h"
-#include "stack.h"
 #include "memory.h"
 
-extern bin_node *
-bin_node_new (const void *data, const bin_node *parent,
-              const bin_node *lc, const bin_node *rc)
+extern binary_tree *
+binary_tree_new (size_t _size)
 {
-  bin_node *node = alloc_func (sizeof (bin_node));
-  node->data = (void *) data;
-  node->parent = (void *) parent;
-  node->lc = (void *) lc;
-  node->rc = (void *) rc;
-  return node;
+  binary_tree *T = alloc_func (sizeof (binary_tree));
+  T->root = NULL;
+  T->n = 0;
+  T->_size = _size;
+  return T;
+}
+
+static size_t
+bin_node_free (bin_node *node, size_t n)
+{
+  if (node == NULL) return 0;
+  bin_node **stack = alloc_func (((n + 1) >> 1) * sizeof (bin_node *));
+  size_t len = 0, count = 0;
+  stack[len++] = node;
+  while (len)
+    {
+      node = stack[--len];
+      if (node->rc) stack[len++] = node->rc;
+      if (node->lc) stack[len++] = node->lc;
+      free_func (node->data);
+      free_func (node);
+      count++;
+    }
+  free_func (stack);
+  return count;
 }
 
 /* Time: O(n)
    Space: O(n)  */
 extern void
-bin_node_free (bin_node *node)
+binary_tree_free (binary_tree *T)
 {
-  stack *s = stack_new(sizeof (bin_node *));
-  stack_push (s, &node);
-  while (s->len)
-    {
-      bin_node **t = stack_top (s); node = *t; stack_pop (s);
-      if (node->rc) stack_push (s, &node->rc);
-      if (node->lc) stack_push (s, &node->lc);
-      free_func (node->data);
-      free_func (node);
-    }
-  stack_free (s);
+  bin_node_free (T->root, T->n);
+  free_func (T);
 }
 
 /* Time: O(n)
-   Space: O(n)  */
-extern bin_node *
-bin_node_bfs (bin_node *node, int (*visit) (bin_node *))
+   Size: O(n)  */
+extern size_t
+binary_tree_height (const binary_tree *T)
 {
-  queue *q = queue_new (sizeof (bin_node *));
-  queue_enqueue (q, &node);
-  while (q->len)
+  bin_node *node = T->root;
+  if (node == NULL) return 0;
+  bin_node **queue = alloc_func (T->n * sizeof (bin_node *));
+  size_t front = 0, rear = 0;
+  queue[rear++] = node;
+  size_t new_level = 1, height = 0;
+  while (front < rear)
     {
-      bin_node **t = queue_front (q); node = *t; queue_dequeue (q);
-      if (0 == visit (node))
+      node = queue[front++];
+      if (node->lc) queue[rear++] = node->lc;
+      if (node->rc) queue[rear++] = node->rc;
+      if (front == new_level)
         {
-          queue_free (q);
-          return node;
+          height++;
+          new_level = rear;
         }
-      if (node->lc) queue_enqueue (q, &node->lc);
-      if (node->rc) queue_enqueue (q, &node->rc);
     }
-  queue_free (q);
-  return NULL;
+  free_func (queue);
+  return height;
 }
 
 /* Time: O(n)
    Space: O(n)  */
-extern bin_node *
-bin_node_dfs_preorder (bin_node *node, int (*visit) (bin_node *))
+extern size_t
+binary_tree_width (const binary_tree *T)
 {
-  stack *s = stack_new (sizeof (bin_node *));
-  stack_push (s, &node);
-  while (s->len)
+  bin_node *node = T->root;
+  if (node == NULL) return 0;
+  bin_node **queue = alloc_func (T->n * sizeof (bin_node *));
+  size_t front = 0, rear = 0;
+  queue[rear++] = node;
+  size_t new_level = 1, width = 0;
+  while (front < rear)
     {
-      bin_node **t = stack_top (s); node = *t; stack_pop (s);
-      if (0 == visit (node))
+      node = queue[front++];
+      if (node->lc) queue[rear++] = node->lc;
+      if (node->rc) queue[rear++] = node->rc;
+      if (front == new_level)
         {
-          stack_free (s);
-          return node;
+          size_t tmp = rear - front;
+          if (tmp > width) width = tmp;
+          new_level = rear;
         }
-      if (node->rc) stack_push (s, &node->rc);
-      if (node->lc) stack_push (s, &node->lc);
     }
-  stack_free (s);
-  return NULL;
+  free_func (queue);
+  return width;
 }
 
 /* Time: O(n)
    Space: O(n)  */
-/* extern bin_node * */
-/* bin_node_dfs_inorder (bin_node *node, int (*visit) (bin_node *)) */
-/* { */
-/*   if (NULL == node) return NULL; */
-/*   bin_node *tmp = bin_node_dfs_inorder (node->lc, visit); */
-/*   if (tmp) return tmp; */
-/*   if (0 == visit (node)) return node; */
-/*   return bin_node_dfs_inorder (node->rc, visit); */
-/* } */
-extern bin_node *
-bin_node_dfs_inorder (bin_node *node, int (*visit) (bin_node *))
+extern int
+binary_tree_complete_p (const binary_tree *T)
 {
-  stack *s = stack_new (sizeof (bin_node *));
+  bin_node *node = T->root;
+  bin_node **queue = alloc_func ((2 * T->n + 1) * sizeof (bin_node *));
+  size_t front = 0, rear = 0;
+  queue[rear++] = node;
+  while (front < rear)
+    {
+      node = queue[front++];
+      if (node)
+        {
+          queue[rear++] = node->lc;
+          queue[rear++] = node->rc;
+        }
+      else  /* node == NULL */
+        while (front < rear)
+          if (queue[front++])
+            {
+              free_func (queue);
+              return 0;
+            }
+    }
+  free_func (queue);
+  return 1;
+}
+
+/* Time: O(1)
+   Space: O(1)  */
+extern void
+binary_tree_insert (binary_tree *T, bin_node *parent, int rc, const void *data)
+{
+  bin_node *node = alloc_func (sizeof (bin_node));
+  node->data = alloc_func (T->_size);
+  memcpy (node->data, data, T->_size);
+  node->parent = parent; node->lc = NULL; node->rc = NULL;
+  T->n++;
+  if (parent == NULL) { T->root = node; return; }
+  if (rc) parent->rc = node;
+  else parent->lc = node;
+}
+
+/* Time: O(n)
+   Space: O(1) */
+extern void
+binary_tree_remove (binary_tree *T, bin_node *posi)
+{
+  T->n -= bin_node_free (posi, T->n);
+}
+
+/* Time: O(n)
+   Space: O(n)  */
+static void
+bin_node_bfs (bin_node *node, size_t n,
+              void (*visit) (void *, void *),
+              void *arg)
+{
+  if (node == NULL) return;
+  bin_node **queue = alloc_func (n * sizeof (bin_node *));
+  size_t front = 0, rear = 0;
+  queue[rear++] = node;
+  while (front < rear)
+    {
+      node = queue[front++];
+      visit (node->data, arg);
+      if (node->lc) queue[rear++] = node->lc;
+      if (node->rc) queue[rear++] = node->rc;
+    }
+  free_func (queue);
+}
+
+extern void
+binary_tree_bfs (binary_tree *T,
+                 void (*visit) (void *, void *),
+                 void *arg)
+{
+  bin_node_bfs (T->root, T->n, visit, arg);
+}
+
+/* Time: O(n)
+   Space: O(n)  */
+static void
+bin_node_dfs_preorder (bin_node *node, size_t n,
+                       void (*visit) (void *, void *),
+                       void *arg)
+{
+  if (node == NULL) return;
+  bin_node **stack = alloc_func (((n + 1) >> 1) * sizeof (bin_node *));
+  size_t len = 0;
+  stack[len++] = node;
+  while (len)
+    {
+      node = stack[--len];
+      visit (node->data, arg);
+      if (node->rc) stack[len++] = node->rc;
+      if (node->lc) stack[len++] = node->lc;
+    }
+  free_func (stack);
+}
+
+extern void
+binary_tree_dfs_preorder (binary_tree *T,
+                          void (*visit) (void *, void *),
+                          void *arg)
+{
+  bin_node_dfs_preorder (T->root, T->n, visit, arg);
+}
+
+/* Time: O(n)
+   Space: O(n)  */
+static void
+bin_node_dfs_inorder (bin_node *node, size_t n,
+                      void (*visit) (void *, void *),
+                      void *arg)
+{
+  bin_node **stack = alloc_func (n * sizeof (bin_node *));
+  size_t len = 0;
   while (1)
     {
-      while (node)
+      if (node)
         {
-          stack_push (s, &node);
+          stack[len++] = node;
           node = node->lc;
         }
-      if (s->len == 0)
+      else if (len)
         {
-          stack_free (s);
-          return NULL;
+          node = stack[--len];
+          visit (node->data, arg);
+          node = node->rc;
         }
-      bin_node **tmp = stack_top (s); node = *tmp; stack_pop (s);
-      if (0 == visit (node))
-        {
-          stack_free (s);
-          return node;
-        }
-      node = node->rc;
+      else
+        break;
     }
+  free_func (stack);
+}
+
+extern void
+binary_tree_dfs_inorder (binary_tree *T,
+                         void (*visit) (void *, void *),
+                         void *arg)
+{
+  bin_node_dfs_inorder (T->root, T->n, visit, arg);
 }
 
 /* Time: O(n)
    Space: O(n)  */
-/* extern bin_node * */
-/* bin_node_dfs_postorder (bin_node *node, int (*visit) (bin_node *)) */
-/* { */
-/*   if (NULL == node) return NULL; */
-/*   bin_node *tmp; */
-/*   if ((tmp = bin_node_dfs_postorder (node->lc, visit)) */
-/*       || (tmp = bin_node_dfs_postorder (node->rc, visit))) */
-/*     return tmp; */
-/*   return 0 == visit (node) ? node : NULL; */
-/* } */
-extern bin_node *
-bin_node_dfs_postorder (bin_node *node, int (*visit) (bin_node *))
+static void
+bin_node_dfs_postorder (bin_node *node, size_t n,
+                        void (*visit) (void *, void *),
+                        void *arg)
 {
-  stack *s = stack_new (sizeof (bin_node *));
-  stack_push (s, &node);
-  while (s->len)
+  bin_node **stack = alloc_func (n * sizeof (bin_node *));
+  size_t len = 0;
+  bin_node *latest_visited = NULL;
+  while (1)
     {
-      bin_node **tmp = stack_top (s);
-      if (node->parent != *tmp)
+      if (node)
         {
-          while ((node = *tmp))
-            {
-              if (node->lc)
-                {
-                  if (node->rc) stack_push (s, &node->rc);
-                  stack_push (s, &node->lc);
-                }
-              else
-                stack_push (s, &node->rc);
-              tmp = stack_top (s);
-            }
-          stack_pop (s);  /* pop NULL */
+          stack[len++] = node;
+          node = node->lc;
         }
-      tmp = stack_top (s); node = *tmp; stack_pop (s);
-      if (0 == visit (node))
+      else if (len)
         {
-          stack_free (s);
+          node = stack[len - 1];
+          if (node->rc && node->rc != latest_visited)
+            {
+              node = node->rc;
+              stack[len++] = node;
+              node = node->lc;
+            }
+          else
+            {
+              node = stack[--len];
+              visit (node->data, arg);
+              latest_visited = node;
+              node = NULL;
+            }
+        }
+      else
+        break;
+    }
+  free_func (stack);
+}
+
+extern void
+binary_tree_dfs_postorder (binary_tree *T,
+                           void (*visit) (void *, void *),
+                           void *arg)
+{
+  bin_node_dfs_postorder (T->root, T->n, visit, arg);
+}
+
+/* Time: O(1)
+   Space: O(1)  */
+extern bin_node *
+binary_tree_bfs_front (const binary_tree *T)
+{
+  return T->root;
+}
+
+/* Time: O(n)
+   Space: O(n)  */
+extern bin_node *
+binary_tree_bfs_back (const binary_tree *T)
+{
+  if (T->root == NULL) return NULL;
+  bin_node **queue = alloc_func (T->n * sizeof (bin_node *));
+  size_t front = 0, rear = 0;
+  bin_node *node = T->root;
+  queue[rear++] = node;
+  while (front < rear)
+    {
+      node = queue[front++];
+      if (node->lc) queue[rear++] = node->lc;
+      if (node->rc) queue[rear++] = node->rc;
+    }
+  free_func (queue);
+  return node;
+}
+
+/* Time: O(n)
+   Space: O(n)  */
+extern bin_node *
+binary_tree_bfs_next (const binary_tree *T, const bin_node *posi)
+{
+  bin_node *node = T->root;
+  if (node == NULL) return NULL;
+  bin_node **queue = alloc_func (T->n * sizeof (bin_node *));
+  size_t front = 0, rear = 0;
+  bin_node *latest_visited = NULL;
+  queue[rear++] = node;
+  while (front < rear)
+    {
+      node = queue[front++];
+      if (latest_visited == posi)
+        {
+          free_func (queue);
           return node;
         }
+      if (node->lc) queue[rear++] = node->lc;
+      if (node->rc) queue[rear++] = node->rc;
+      latest_visited = node;
     }
-  stack_free (s);
+  free_func (queue);
   return NULL;
 }
 
-/* Time: O(1)
-   Space: O(1)  */
 extern bin_node *
-bin_node_bfs_front (const bin_node *node)
+binary_tree_bfs_prev (const binary_tree *T, const bin_node *posi)
 {
-  return (bin_node *) node;
-}
-
-/* Time: O(n)
-   Space: O(n)  */
-extern bin_node *
-bin_node_bfs_back (const bin_node *node)
-{
-  queue *q = queue_new (sizeof (bin_node *));
-  queue_enqueue (q, &node);
-  while (q->len)
+  bin_node *node = T->root;
+  if (node == NULL) return NULL;
+  bin_node **queue = alloc_func (T->n * sizeof (bin_node *));
+  size_t front = 0, rear = 0;
+  bin_node *latest_visited = NULL;
+  queue[rear++] = node;
+  while (front < rear)
     {
-      bin_node **t = queue_front (q); node = *t; queue_dequeue (q);
-      if (node->lc) queue_enqueue (q, &node->lc);
-      if (node->rc) queue_enqueue (q, &node->rc);
+      bin_node *node = queue[front++];
+      if (node == posi)
+        {
+          free_func (queue);
+          return latest_visited;
+        }
+      if (node->lc) queue[rear++] = node->lc;
+      if (node->rc) queue[rear++] = node->rc;
+      latest_visited = node;
     }
-  return (bin_node *) node;
+  free_func (queue);
+  return latest_visited;
 }
 
 /* Time: O(1)
    Space: O(1)  */
 extern bin_node *
-bin_node_dfs_preorder_front (const bin_node *node)
+binary_tree_dfs_preorder_front (const binary_tree *T)
 {
-  return (bin_node *) node;
+  return T->root;
 }
 
 /* Time: O(n)
    Space: O(1)  */
 extern bin_node *
-bin_node_dfs_preorder_back (const bin_node *node)
+binary_tree_dfs_preorder_back (const binary_tree *T)
 {
+  bin_node *node = T->root;
+  if (node == NULL) return NULL;
   while (1)
     {
       if (node->rc)
@@ -204,96 +390,122 @@ bin_node_dfs_preorder_back (const bin_node *node)
       else if (node->lc)
         node = node->lc;
       else
-        return (bin_node *) node;
+        return node;
     }
 }
 
 /* Time: O(n)
    Space: O(1)  */
 extern bin_node *
-bin_node_dfs_preorder_next (const bin_node *node)
+binary_tree_dfs_preorder_next (const binary_tree *T, const bin_node *posi)
 {
-  if (node->lc) return node->lc;
-  if (node->rc) return node->rc;
-  bin_node *parent;
-  while ((parent = node->parent)
-         && (parent->rc == NULL ||  parent->rc == node))
-    node = parent;
-  return parent ? parent->rc : NULL;
+  if (posi == NULL) return NULL;
+  if (posi->lc) return posi->lc;
+  if (posi->rc) return posi->rc;
+  while (1)
+    {
+      bin_node *parent = posi->parent;
+      if (parent == NULL)
+        return NULL;
+      else if (parent->rc == NULL || parent->rc == posi)
+        posi = parent;
+      else
+        return parent->rc;
+    }
 }
 
 /* Time: O(n)
    Space: O(1)  */
 extern bin_node *
-bin_node_dfs_preorder_prev (const bin_node *node)
+binary_tree_dfs_preorder_prev (const binary_tree *T, const bin_node *posi)
 {
-  bin_node *parent;
-  if ((parent = node->parent) == NULL) return NULL;
-  if (node == parent->lc || parent->lc == NULL)
+  if (posi == NULL) return NULL;
+  bin_node *parent = posi->parent;
+  if (parent == NULL || parent->lc == NULL || parent->lc == posi)
     return parent;
-  else
-    return bin_node_dfs_preorder_back (parent->lc);
+  posi = parent->lc;
+  while (1)
+    {
+      if (posi->rc)
+        posi = posi->rc;
+      else if (posi->lc)
+        posi = posi->lc;
+      else
+        return (bin_node *) posi;
+    }
 }
 
 /* Time: O(n)
    Space: O(1)  */
 extern bin_node *
-bin_node_dfs_inorder_front (const bin_node *node)
+binary_tree_dfs_inorder_front (const binary_tree *T)
 {
+  bin_node *node = T->root;
+  if (node == NULL) return NULL;
   while (node->lc) node = node->lc;
-  return (bin_node *) node;
+  return node;
 }
 
 /* Time: O(n)
    Space: O(1)  */
 extern bin_node *
-bin_node_dfs_inorder_back (const bin_node *node)
+binary_tree_dfs_inorder_back (const binary_tree *T)
 {
+  bin_node *node = T->root;
+  if (node == NULL) return NULL;
   while (node->rc) node = node->rc;
-  return (bin_node *) node;
+  return node;
 }
 
 /* Time: O(n)
    Space: O(1)  */
 extern bin_node *
-bin_node_dfs_inorder_next (const bin_node *node)
+binary_tree_dfs_inorder_next (const binary_tree *T, const bin_node *posi)
 {
-  if (node->rc)  /* then: node = bin_node_dfs_inorder_front (node->rc);  */
+  if (posi == NULL) return NULL;
+  if (posi->rc)
     {
-      node = node->rc;
-      while (node->lc) node = node->lc;
+      posi = posi->rc;
+      while (posi->lc) posi = posi->lc;
     }
   else
     {
-      while (node->parent && node == node->parent->rc) node = node->parent;
-      node = node->parent;
+      bin_node *parent;
+      while ((parent = posi->parent) && parent->rc == posi)
+        posi = parent;
+      posi = posi->parent;
     }
-  return (bin_node *) node;
+  return (bin_node *) posi;
 }
 
 /* Time: O(n)
    Space: O(1)  */
 extern bin_node *
-bin_node_dfs_inorder_prev (const bin_node *node)
+binary_tree_dfs_inorder_prev (const binary_tree *T, const bin_node *posi)
 {
-  if (node->lc)  /* then: node = bin_node_dfs_inorder_back (node->lc);  */
+  if (posi == NULL) return NULL;
+  if (posi->lc)
     {
-      node = node->lc;
-      while (node->rc) node = node->rc;
+      posi = posi->lc;
+      while (posi->rc) posi = posi->rc;
     }
   else
     {
-      while (node->parent && node == node->parent->lc) node = node->parent;
-      node = node->parent;
+      bin_node *parent;
+      while ((parent = posi->parent) && parent->lc == posi)
+        posi = parent;
+      posi = posi->parent;
     }
-  return (bin_node *) node;
+  return (bin_node *) posi;
 }
 
 /* Time: O(n)
    Space: O(1)  */
 extern bin_node *
-bin_node_dfs_postorder_front (const bin_node *node)
+binary_tree_dfs_postorder_front (const binary_tree *T)
 {
+  bin_node *node = T->root;
+  if (node == NULL) return NULL;
   while (1)
     {
       if (node->lc)
@@ -301,41 +513,55 @@ bin_node_dfs_postorder_front (const bin_node *node)
       else if (node->rc)
         node = node->rc;
       else
-        return (bin_node *) node;
+        return node;
     }
 }
 
 /* Time: O(1)
    Space: O(1)  */
 extern bin_node *
-bin_node_dfs_postorder_back (const bin_node *node)
+binary_tree_dfs_postorder_back (const binary_tree *T)
 {
-  return (bin_node *) node;
+  return T->root;
 }
 
 /* Time: O(n)
    Space: O(1)  */
 extern bin_node *
-bin_node_dfs_postorder_next (const bin_node *node)
+binary_tree_dfs_postorder_next (const binary_tree *T, const bin_node *posi)
 {
-  bin_node *parent;
-  if ((parent = node->parent) == NULL) return NULL;
-  if (node == parent->rc || parent->rc == NULL)
+  if (posi == NULL) return NULL;
+  bin_node *parent = posi->parent;
+  if (parent == NULL || parent->rc == NULL || parent->rc == posi)
     return parent;
-  else
-    return bin_node_dfs_postorder_front (parent->rc);
+  posi = parent->rc;
+  while (1)
+    {
+      if (posi->lc)
+        posi = posi->lc;
+      else if (posi->rc)
+        posi = posi->rc;
+      else
+        return (bin_node *) posi;
+    }
 }
 
 /* Time: O(n)
    Space: O(1)  */
 extern bin_node *
-bin_node_dfs_postorder_prev (const bin_node *node)
+binary_tree_dfs_postorder_prev (const binary_tree *T, const bin_node *posi)
 {
-  if (node->rc) return node->rc;
-  if (node->lc) return node->lc;
-  bin_node *parent;
-  while ((parent = node->parent)
-         && (parent->lc == NULL || node == parent->lc))
-    node = parent;
-  return parent ? parent->lc : NULL;
+  if (posi == NULL) return NULL;
+  if (posi->rc) return posi->rc;
+  if (posi->lc) return posi->lc;
+  while (1)
+    {
+      bin_node *parent = posi->parent;
+      if (parent == NULL)
+        return NULL;
+      else if (parent->lc == NULL || parent->lc == posi)
+        posi = parent;
+      else
+        return parent->lc;
+    }
 }
