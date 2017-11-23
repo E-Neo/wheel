@@ -27,6 +27,11 @@ extern void vector_remove (vector *vec, size_t posi, size_t n);
 extern void vector_remove_with_func (vector *vec, size_t begin, size_t end,
                                      int (*func) (const void *));
 extern void *vector_at (const vector *vec, size_t n);
+#define vector_foreach(vec, elem, begin, end)                           \
+  for (void *elem = (char *) (vec)->data + (begin) * (vec)->_size,      \
+         *elem_end = (char *) (vec)->data + (end) * (vec)->_size;       \
+       (char *) elem < (char *) elem_end;                               \
+       elem = (char *) elem + (vec)->_size)
 extern void vector_reverse (vector *vec, size_t begin, size_t end);
 extern void *vector_binary_search (vector *vec, const void *key,
                                    size_t begin, size_t end,

@@ -25,5 +25,6 @@ extern list_node *list_insert (list *lst, list_node *posi,
                                const void *base, size_t n);
 extern list_node *list_remove (list *lst, list_node *posi, size_t n);
 extern list_node *list_at (const list *lst, size_t n);
-
+#define list_foreach(lst, node, begin, end)\
+  for (list_node *node = (begin); node != (end); node = node->next)
 #endif

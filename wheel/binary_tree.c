@@ -139,11 +139,24 @@ binary_tree_insert (binary_tree *T, bin_node *parent, int rc, const void *data)
 }
 
 /* Time: O(n)
-   Space: O(1) */
+   Space: O(n) */
 extern void
 binary_tree_remove (binary_tree *T, bin_node *posi)
 {
-  T->n -= bin_node_free (posi, T->n);
+  if (posi == T->root)
+    {
+      T->n -= bin_node_free (posi, T->n);
+      T->root = NULL;
+    }
+  else
+    {
+      bin_node *parent = posi->parent;
+      if (parent->lc == posi)
+        parent->lc = NULL;
+      else
+        parent->rc = NULL;
+      T->n -= bin_node_free (posi, T->n);
+    }
 }
 
 /* Time: O(n)
@@ -343,6 +356,8 @@ binary_tree_bfs_next (const binary_tree *T, const bin_node *posi)
   return NULL;
 }
 
+/* Time: O(n)
+   Space: O(n)  */
 extern bin_node *
 binary_tree_bfs_prev (const binary_tree *T, const bin_node *posi)
 {

@@ -196,7 +196,8 @@ merge_sort (void *base, size_t len, size_t _size,
 }
 
 /* Time: O(n log n)
-   Space: O(n)  */
+   Space: O(n)
+   Stable  */
 extern void
 vector_merge_sort (vector *vec, size_t begin, size_t end,
                    int (*compar) (const void *, const void *))
@@ -230,7 +231,8 @@ insertion_sort (void *base, size_t len, size_t _size,
 }
 
 /* Time: O(n^2)
-   Space: O(1)  */
+   Space: O(1)
+   Stable  */
 extern void
 vector_insertion_sort (vector *vec, size_t begin, size_t end,
                        int (*compar) (const void *, const void *))
@@ -265,7 +267,8 @@ bubble_sort (void *base, size_t len, size_t _size,
 }
 
 /* Time: O(n^2)
-   Space: O(1)  */
+   Space: O(1)
+   Stable  */
 extern void
 vector_bubble_sort (vector *vec, size_t begin, size_t end,
                     int (*compar) (const void *, const void *))

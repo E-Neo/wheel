@@ -150,7 +150,7 @@ digraph_at_edge (digraph *G, size_t u, size_t v)
 extern void
 digraph_bfs (digraph *G, size_t s, void (*visit) (void *, void *), void *arg)
 {
-  bit_array *discovered = bit_array_new_with_len (G->n);
+  bit_array *discovered = bit_array_new (G->n);
   queue *q = queue_new (sizeof (size_t));
   queue_enqueue (q, &s); bit_array_set (discovered, s);
   while (q->len)
@@ -174,7 +174,7 @@ extern void
 digraph_dfs_preorder (digraph *G, size_t s,
                       void (*visit) (void *, void *), void *arg)
 {
-  bit_array *visited = bit_array_new_with_len (G->n);
+  bit_array *visited = bit_array_new (G->n);
   size_t *stack = alloc_func (G->n * sizeof (size_t)); size_t len = 0;
   stack[len++] = s; bit_array_set (visited, s);
   while (len)

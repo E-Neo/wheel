@@ -10,10 +10,10 @@ print_vector_int (const vector *vec)
       return;
     }
   printf ("{");
-  const int *data_end = (int *) vec->data + vec->len;
-  for (int *data = vec->data; data < data_end - 1; data++)
-    printf (" %d,", *data);
-  printf (" %d }\n", *(data_end - 1));
+  vector_foreach (vec, elem, 0, vec->len - 1)
+    printf (" %d,", *(int *) elem);
+  printf (" %d }\n",
+          *(int *) ((char *) vec->data + (vec->len - 1) * vec->_size));
 }
 
 static int

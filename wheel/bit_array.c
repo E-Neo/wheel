@@ -3,7 +3,7 @@
 #include "memory.h"
 
 extern bit_array *
-bit_array_new_with_len (size_t len)
+bit_array_new (size_t len)
 {
   size_t _capacity = (len + sizeof (unsigned long) - 1)
     / sizeof (unsigned long);
@@ -11,26 +11,9 @@ bit_array_new_with_len (size_t len)
   unsigned long *data = alloc_func (_capacity * sizeof (unsigned long));
   memset (data, 0, _capacity * sizeof (unsigned long));
   ba->data = data;
+  ba->len = len;
   ba->_capacity = _capacity;
   return ba;
-}
-
-extern bit_array *
-bit_array_new ()
-{
-  return bit_array_new_with_len (BIT_ARRAY_DEFAULT_LEN);
-}
-
-extern void
-bit_array_set_len (bit_array *ba, size_t len)
-{
-  size_t _capacity = (len + sizeof (unsigned long) - 1)
-    / sizeof (unsigned long);
-  unsigned long *data = ba->data;
-  data = realloc_func (data, _capacity * sizeof (unsigned long));
-  if (_capacity > ba->_capacity)
-    memset (data + ba->_capacity, 0, _capacity - ba->_capacity);
-  ba->_capacity = _capacity;
 }
 
 extern void
