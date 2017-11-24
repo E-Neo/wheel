@@ -3,8 +3,6 @@
 
 #include <stddef.h>
 
-#define BIT_ARRAY_DEFAULT_LEN (1024)
-
 typedef struct bit_array bit_array;
 
 struct bit_array

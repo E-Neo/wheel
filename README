@@ -3,13 +3,21 @@ wheel
 
 A library of a lot of wheels (data structures, algorithms and more)?
 
+List of Implementations
+-----------------------
+
+- binary_tree
+- bit_array
+- digraph
+- graph
+- list
+- queue
+- slist
+- stack
+- vector
+
 Technical details
 -----------------
 
-- Written in C and don't have recursive functions.
+- Written in C.
 - Valgrind clean.
-
-Note
-----
-
-Do not have high expectations on this library.
