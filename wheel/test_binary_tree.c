@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 #include "binary_tree.h"
 #include "vector.h"
 
@@ -54,6 +55,13 @@ visit (void *data, void *arg)
   vector_insert (vec, vec->len, data, 1);
 }
 
+static int
+compar (const void *x, const void *y)
+{
+  return strcmp (x, y);
+}
+
+
 int
 main ()
 {
@@ -65,6 +73,8 @@ main ()
   printf ("width, expect 5: %zu\n", binary_tree_width (T));
   printf ("complete_p, expect 0: %d\n", binary_tree_complete_p (T));
   printf ("complete_p, expect 1: %d\n", binary_tree_complete_p (complete_T));
+  printf ("bst_p, expect 0: %d\n", binary_tree_bst_p (complete_T, compar));
+  printf ("bst_p, expect 1: %d\n", binary_tree_bst_p (T, compar));
   puts ("");
 
   puts ("expect");

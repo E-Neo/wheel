@@ -25,6 +25,8 @@ extern void binary_tree_free (binary_tree *T);
 extern size_t binary_tree_height (const binary_tree *T);
 extern size_t binary_tree_width (const binary_tree *T);
 extern int binary_tree_complete_p (const binary_tree *T);
+extern int binary_tree_bst_p (const binary_tree *T,
+                              int (*compar) (const void *, const void *));
 extern void binary_tree_insert (binary_tree *T, bin_node *parent, int rc,
                                 const void *data);
 extern void binary_tree_remove (binary_tree *T, bin_node *posi);

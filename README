@@ -20,4 +20,6 @@ Technical details
 -----------------
 
 - Written in C.
+- No surplus error checking and avoid recursive functions to gain
+  high performance.
 - Valgrind clean.

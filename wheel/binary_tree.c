@@ -123,6 +123,48 @@ binary_tree_complete_p (const binary_tree *T)
   return 1;
 }
 
+/* Time: O(n)
+   Space: O(n)  */
+extern int
+binary_tree_bst_p (const binary_tree *T,
+                   int (*compar) (const void *, const void *))
+{
+  bin_node *node = T->root;
+  if (node == NULL) return 1;
+  bin_node **stack = alloc_func (T->n * sizeof (bin_node *));
+  size_t top = 0;
+  void *prev = node->data;
+  while (node->lc)
+    {
+      stack[top++] = node;
+      node = node->lc;
+      prev = node->data;
+    }
+  while (1)
+    {
+      if (node)
+        {
+          stack[top++] = node;
+          node = node->lc;
+        }
+      else if (top)
+        {
+          node = stack[--top];
+          if (compar (prev, node->data) > 0)
+            {
+              free_func (stack);
+              return 0;
+            }
+          prev = node->data;
+          node = node->rc;
+        }
+      else
+        break;
+    }
+  free_func (stack);
+  return 1;
+}
+
 /* Time: O(1)
    Space: O(1)  */
 extern void

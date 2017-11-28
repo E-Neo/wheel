@@ -1,8 +1,16 @@
 #include <stdio.h>
 #include "graph.h"
+#include "vector.h"
 
-static graph *
-make_graph00 ()
+static void
+visit (graph_node node, void *data, void *arg)
+{
+  vector *vec = arg;
+  vector_insert (vec, vec->len, data, 1);
+}
+
+static void
+test_graph ()
 {
   int w;
   graph *G = graph_new (0, 3, sizeof (int));
@@ -29,13 +37,26 @@ make_graph00 ()
   w = 2; graph_insert_edge (G, v4, v6, &w);
   w = 6; graph_insert_edge (G, v5, v6, &w);
   graph_remove_node (G, v0);
-  return G;
+
+  vector *vec = vector_new (3);
+  printf ("bfs\nexpect: V1 V2 V3 V4 V5 V6\nresult:");
+  graph_bfs (G, v1, visit, vec);
+  vector_foreach (vec, elem, 0, vec->len)
+    printf (" %s", (char *) elem);
+  puts ("");
+  printf ("dfs_preorder\nexpect: V1 V4 V6 V5 V3 V2\nresult:");
+  vec->len = 0;
+  graph_dfs_preorder (G, v1, visit, vec);
+  vector_foreach (vec, elem, 0, vec->len)
+    printf (" %s", (char *) elem);
+  puts ("");
+  vector_free (vec);
+  graph_free (G);
 }
 
 int
 main ()
 {
-  graph *G = make_graph00 ();
-  graph_free (G);
+  test_graph ();
   return 0;
 }

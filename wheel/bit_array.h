@@ -9,7 +9,6 @@ struct bit_array
 {
   unsigned long *data;
   size_t len;
-  size_t _capacity;
 };
 
 extern bit_array *bit_array_new (size_t len);

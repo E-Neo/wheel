@@ -25,5 +25,24 @@ extern void graph_insert_edge (graph *G, graph_node u, graph_node v,
                                const void *data);
 extern void graph_remove_node (graph *G, graph_node node);
 extern void graph_remove_edge (graph *G, graph_node u, graph_node v);
+extern const void *graph_node_next (const graph *G,
+                                    const void *idx, graph_node *node);
+#define graph_node_foreach(G, node)                                     \
+  for (graph_node node, keep = 1; keep;)                                \
+    for (const void *idx = graph_node_next (G, NULL, &node);            \
+         idx;                                                           \
+         idx = graph_node_next (G, idx, &node), keep = idx != NULL)
+extern const void *graph_node_nbr_next (const graph *G, graph_node node,
+                                        const void *idx, graph_node *nbr);
+#define graph_node_nbr_foreach(G, node, nbr)                            \
+  for (graph_node nbr, keep = 1; keep;)                                 \
+    for (const void *idx = graph_node_nbr_next (G, node, NULL, &nbr);   \
+         idx;                                                           \
+         idx = graph_node_nbr_next (G, node, idx, &nbr), keep = idx != NULL)
+extern void graph_bfs (graph *G, graph_node s,
+                       void (*visit) (graph_node, void *, void *), void *arg);
+extern void graph_dfs_preorder (graph *G, graph_node s,
+                                void (*visit) (graph_node, void *, void *),
+                                void *arg);
 
 #endif
