@@ -8,7 +8,7 @@ typedef struct bit_array bit_array;
 struct bit_array
 {
   unsigned long *data;
-  size_t len;
+  size_t count, len;
 };
 
 extern bit_array *bit_array_new (size_t len);
