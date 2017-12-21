@@ -1,4 +1,5 @@
 #include <string.h>
+#include <limits.h>
 #include "vector.h"
 #include "memory.h"
 
@@ -132,6 +133,100 @@ vector_binary_search (vector *vec, const void *key, size_t begin, size_t end,
   /* replace binary_search() with bsearch() in stdlib.h if you want.  */
   return binary_search (key, data + begin * _size,
                         end - begin, _size, compar);
+}
+
+static void
+swap (void *x, void *y, size_t _size)
+{
+  while (_size--)
+    {
+      char t = *(char *) x;
+      *(char *) x = *(char *) y;
+      *(char *) y = t;
+      x = (char *) x + 1;
+      y = (char *) y + 1;
+    }
+}
+
+static void *
+partition (void *base, const void *end, size_t _size,
+           int (*compar) (const void *, const void *))
+{
+  char *pivot = (char *) end - _size;
+  char *p = (char *) base - _size;
+  for (char *q = base; q < pivot; q += _size)
+    if (compar (q, pivot) <= 0)
+      {
+        p += _size;
+        swap (p, q, _size);
+      }
+  p += _size;
+  swap (p, pivot, _size);
+  return p;
+}
+
+/* static void */
+/* _quicksort (void *base, const void *end, size_t _size, */
+/*             int (*compar) (const void *, const void *)) */
+/* { */
+/*   if ((char *) base + _size < (char *) end) */
+/*     { */
+/*       void *pivot = partition (base, end, _size, compar); */
+/*       _quicksort (base, pivot, _size, compar); */
+/*       _quicksort ((char *) pivot + _size, end, _size, compar); */
+/*     } */
+/* } */
+
+static void
+quicksort (void *base, size_t len, size_t _size,
+            int (*compar) (const void *, const void *))
+{
+  struct stack_node
+  {
+    char *begin, *end;
+  };
+  struct stack_node stack[CHAR_BIT * sizeof (size_t)];
+  size_t top = 0;
+  stack[top].begin = base;
+  stack[top].end = (char *) base + len * _size;
+  top++;
+  while (top)
+    {
+      char *begin = stack[top - 1].begin;
+      char *end = stack[top - 1].end;
+      top--;
+      if (begin + _size < end)
+        {
+          char *pivot = partition (base, end, _size, compar);
+          char *right_begin = pivot + _size;
+          if (pivot - begin > end - right_begin)
+            {
+              stack[top].begin = begin;
+              stack[top].end = pivot;
+              top++;
+              stack[top].begin = right_begin;
+              stack[top].end = end;
+              top++;
+            }
+          else
+            {
+              stack[top].begin = right_begin;
+              stack[top].end = end;
+              top++;
+              stack[top].begin = begin;
+              stack[top].end = pivot;
+              top++;
+            }
+        }
+    }
+}
+
+extern void
+vector_quicksort (vector *vec, size_t begin, size_t end,
+                  int (*compar) (const void *, const void *))
+{
+  size_t _size = vec->_size;
+  quicksort ((char *) vec->data + begin * _size, end - begin, _size, compar);
 }
 
 /* O(n) */

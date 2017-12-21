@@ -27,4 +27,14 @@ extern list_node *list_remove (list *lst, list_node *posi, size_t n);
 extern list_node *list_at (const list *lst, size_t n);
 #define list_foreach(lst, node, begin, end)\
   for (list_node *node = (begin); node != (end); node = node->next)
+#define list_foreach_r(lst, node, rbegin, rend)\
+  for (list_node *node = (rbegin); node != (rend); node = node->prev)
+extern list_node * list_search (const list *lst,
+                                const list_node *begin, const list_node *end,
+                                const void *key,
+                                int (*compar) (const void *, const void *));
+extern void list_insertion_sort (const list *lst,
+                                 const list_node *begin, const list_node *end,
+                                 int (*compar) (const void *, const void *));
+
 #endif

@@ -80,3 +80,39 @@ list_at (const list *lst, size_t n)
   while (n--) node = node->next;
   return node;
 }
+
+extern list_node *
+list_search (const list *lst, const list_node *begin, const list_node *end,
+             const void *key, int (*compar) (const void *, const void *))
+{
+  list_foreach (lst, node, (list_node *) begin, end)
+    if (!compar (key, node->data))
+      return node;
+  return NULL;
+}
+
+extern void
+list_insertion_sort (const list *lst,
+                     const list_node *begin, const list_node *end,
+                     int (*compar) (const void *, const void *))
+{
+  list_node *sorted_end = begin->next;
+  while (sorted_end != end)
+    {
+      list_node *next = sorted_end->next;
+      list_foreach (lst, node, (list_node *) begin, sorted_end)
+        if (compar (node->data, sorted_end->data) > 0)
+          {
+            list_node *tmp0 = node->prev;
+            node->prev = sorted_end;
+            tmp0->next = sorted_end;
+            list_node *tmp1 = sorted_end->prev;
+            sorted_end->prev = tmp0;
+            sorted_end->next = node;
+            tmp1->next = next;
+            next->prev = tmp1;
+            break;
+          }
+      sorted_end = next;
+    }
+}
