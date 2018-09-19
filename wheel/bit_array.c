@@ -24,6 +24,21 @@ bit_array_free (bit_array *ba)
 }
 
 extern void
+bit_array_expand (bit_array *ba, size_t len)
+{
+  if (len <= ba->len) return;
+  size_t _ocapacity = ba->len / (sizeof (unsigned long) * CHAR_BIT) + 1;
+  size_t _capacity = len / (sizeof (unsigned long) * CHAR_BIT) + 1;
+  unsigned long *data = realloc_func (ba->data,
+                                      _capacity * sizeof (unsigned long));
+  memset (data + _ocapacity,
+          0,
+          (_capacity - _ocapacity) * sizeof (unsigned long));
+  ba->data = data;
+  ba->len = len;
+}
+
+extern void
 bit_array_set (bit_array *ba, size_t n)
 {
   unsigned long *base = ba->data + n / (sizeof (unsigned long) * CHAR_BIT);

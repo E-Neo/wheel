@@ -26,6 +26,15 @@ main ()
   bit_array_clear (ba, 1);
   print_bit_array (ba, 0, ba->len);
   printf ("count: %zu\n", ba->count);
+  bit_array_expand (ba, 256);
+  print_bit_array (ba, 0, ba->len);
+  printf ("count: %zu\n", ba->count);
+  bit_array_set(ba, 255);
+  print_bit_array (ba, 0, ba->len);
+  printf ("count: %zu\n", ba->count);
+  bit_array_expand (ba, 64);
+  print_bit_array (ba, 0, ba->len);
+  printf ("count: %zu\n", ba->count);
   bit_array_free (ba);
   return 0;
 }
